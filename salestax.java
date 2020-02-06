@@ -2,36 +2,46 @@ import java.text.DecimalFormat;
 import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.PrintWriter;
 
 class Shopping{
     public static void main(String[] args) throws FileNotFoundException {
-        File file = new File(args[0]);
+        //File Read & Write Operation
+        String test_file_path = args[0]+"/test.txt";
+        File file = new File(test_file_path);
         Scanner sc = new Scanner(file);
-        PrintWriter printWriter = new PrintWriter(args[1]);
+        String output_path = args[0]+"/output.txt";
+        PrintWriter printWriter = new PrintWriter(output_path);
+
+        //Calculate Sales Tax and Amount
         double sales_tax = 0.0;
         double total_amount = 0.0;
         DecimalFormat f = new DecimalFormat("#0.00");
+        
         while(sc.hasNextLine()){
             String in = sc.nextLine();
             Item obj = new Item();
-            obj.isExempted = Exemption(in);
-            obj.isImported = in.contains("import");
-            obj.price = calcPrice(in);
-            obj.tax = calcTax(obj.price, obj.isImported, obj.isExempted);
-            sales_tax+=obj.tax;
-            obj.amount = Math.round((obj.price+obj.tax)*100.0)/100.0;
-            total_amount+=obj.amount;
+            obj.isExempted = Exemption(in);         //checks if the item is in the list of exemption
+            obj.isImported = in.contains("import"); //checks if the item is imported
+            obj.price = calcPrice(in);              //calculates the subtotalwithout tax) price(rate*quantity)
+            obj.tax = calcTax(obj.price, obj.isImported, obj.isExempted); //calculates the tax levied on the particular item
+            sales_tax+=obj.tax;                     //add to the total sales tax
+            obj.amount = Math.round((obj.price+obj.tax)*100.0)/100.0;   //calculates the amount of each item(price+tax) & rounds off the amount to 2 decimal places
+            total_amount+=obj.amount;               //adds the amount of each item to total amount
+            
+            //prints to the output file
             String output = billDisplay(in)+": "+f.format(obj.amount);
             printWriter.println(output);
             System.out.println(output);
         }
-        sales_tax = Math.round(sales_tax*20.0)/20.0;
+
+        sales_tax = Math.round(sales_tax*20.0)/20.0;    //rounds of sales tax as mentioned(to nearest 0.05)
+
+        //prints output to the file
         String output = "Sales Taxes: "+f.format(sales_tax)+"\n"+"Total: "+f.format(total_amount);
         printWriter.println(output);
-        System.out.println("Sales Taxes: "+f.format(sales_tax));
-        System.out.println("Total: "+f.format(total_amount));
+        System.out.println(output);
+        
         sc.close();
         printWriter.close();
     }   
